@@ -1,6 +1,6 @@
-OPENAI_API_TYPE: 'azure' #'azure'  OR 'openai'
+OPENAI_API_TYPE: 'openai' #'azure'  OR 'openai'
 # for 'openai'
-OPENAI_KEY: 'sk-xxxxxxxxxxx' # your openai key
+OPENAI_KEY: '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' # your openai key
 # for 'azure'
 AZURE_MODEL: 'XXXXX' # your deploment_model_name 
 AZURE_API_BASE: https://xxxxxxxx.openai.azure.com/ # your deployment endpoint

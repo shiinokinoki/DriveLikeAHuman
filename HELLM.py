@@ -19,8 +19,10 @@ from LLMDriver.customTools import (
     isActionSafe,
 )
 
+# memo: apiがazureかopenaiか, apiのkeyなどをconfig.yamlから読み込む
 OPENAI_CONFIG = yaml.load(open('config.yaml'), Loader=yaml.FullLoader)
 
+# memo: azureの時は今回使用しないので無視 
 if OPENAI_CONFIG['OPENAI_API_TYPE'] == 'azure':
     os.environ["OPENAI_API_TYPE"] = OPENAI_CONFIG['OPENAI_API_TYPE']
     os.environ["OPENAI_API_VERSION"] = OPENAI_CONFIG['AZURE_API_VERSION']
@@ -32,8 +34,18 @@ if OPENAI_CONFIG['OPENAI_API_TYPE'] == 'azure':
         max_tokens=1024,
         request_timeout=60
     )
+# memo: openaiの時はkeyを設定
 elif OPENAI_CONFIG['OPENAI_API_TYPE'] == 'openai':
+    # 環境変数にkeyを設定
     os.environ["OPENAI_API_KEY"] = OPENAI_CONFIG['OPENAI_KEY']
+    # モデルを設定 (chatモデルを使用)
+    # LangChainにはLLMとChatModelが存在。
+    # LLMは文字列入力に対して文字列を返すが、ChatModelは"メッセージ"のリストを入力として受け取り、"メッセージ"を出力として返す.
+    # "メッセージ"はContentとRoleを含む。
+    # Roleには、AI, System, Human, (Function, Tool)がある。
+    # max tokensは、出力の最大文字数。
+    # temperatureは、出力の多様性を調整するパラメータ。0で固定化？される。
+    # modelは8000以上のcontext入力が許可されているモデルを使用する必要がある。
     llm = ChatOpenAI(
         temperature=0,
         model_name='gpt-3.5-turbo-1106', # or any other model with 8k+ context
@@ -45,7 +57,15 @@ elif OPENAI_CONFIG['OPENAI_API_TYPE'] == 'openai':
 # base setting
 vehicleCount = 15
 
+# Highway-v0（環境システム）二巻する設定
 # environment setting
+# ACTIONS_ALL = {
+#         0: 'LANE_LEFT',
+#         1: 'IDLE',
+#         2: 'LANE_RIGHT',
+#         3: 'FASTER',
+#         4: 'SLOWER'
+#     }
 config = {
     "observation": {
         "type": "Kinematics",
@@ -65,15 +85,18 @@ config = {
     "render_agent": True,
 }
 
-
+# 高速道路環境の定義
 env = gym.make('highway-v0', render_mode="rgb_array")
 env.configure(config)
+# 環境の録画
 env = RecordVideo(
     env, './results-video',
     name_prefix=f"highwayv0"
 )
 env.unwrapped.set_record_video_wrapper(env)
+# 初期環境の観察
 obs, info = env.reset()
+# 実行中に環境の状態をwindowで表示する
 env.render()
 
 # scenario and driver agent setting

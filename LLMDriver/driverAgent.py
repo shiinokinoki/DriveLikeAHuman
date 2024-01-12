@@ -24,13 +24,24 @@ class DriverAgent:
         self, llm: Union[ChatOpenAI, AzureChatOpenAI, OpenAI], toolModels: list, sce: Scenario,
         verbose: bool = False
     ) -> None:
+        """
+
+        Args:
+            llm (Union[ChatOpenAI, AzureChatOpenAI, OpenAI]): 基本的にChatModel.
+            toolModels (list): toolModels = [getAvailableActions(env),getAvailableLanes(sce),...]のように、toolのリストを渡す。
+            sce (Scenario): _description_
+            verbose (bool, optional): _description_. Defaults to False.
+        """
         self.sce = sce
         self.ch = CustomHandler()
         self.llm = llm
 
         self.tools = []
         for ins in toolModels:
+            # 各種ツールはクラスである。このインスタンスを簡易的に呼び出すためにgetattrを使う。
+            # 全てのツールクラスはinferenceメソッドを持ち、そのメソッドはそれぞれのアクションを示すプロンプトになっている。
             func = getattr(ins, 'inference')
+            # langChainのToolインスタンスに格納される。
             self.tools.append(
                 Tool(name=func.name, description=func.description, func=func)
             )
